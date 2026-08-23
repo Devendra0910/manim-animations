@@ -3,3 +3,7 @@ media/
 __pycache__/
 *.pyc
 .DS_Store
+
+# Cloned-voice narration clips — personal voice data, kept local only.
+# (assets/beep_*.wav are synthetic sound effects and stay tracked.)
+assets/narration/

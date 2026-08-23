@@ -21,6 +21,12 @@ ASSETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
 BEEP_EVEN = os.path.join(ASSETS_DIR, "beep_even.wav")   # lower pitch: ÷ 2
 BEEP_ODD = os.path.join(ASSETS_DIR, "beep_odd.wav")     # higher pitch: × 3 + 1
 
+# Cloned-voice narration clips (assets/narration/, gitignored — not committed).
+NARRATION_DIR = os.path.join(ASSETS_DIR, "narration")
+SCENE3_INTRO = os.path.join(NARRATION_DIR, "scene3_intro.wav")  # "Let's start with n equals seven."
+SCENE3_PEAK = os.path.join(NARRATION_DIR, "scene3_peak.wav")    # "Watch it climb... up to fifty two..."
+SCENE3_LAND = os.path.join(NARRATION_DIR, "scene3_land.wav")    # "Sixteen steps later, it lands on one."
+
 
 def collatz_sequence(n: int) -> list[int]:
     seq = [n]
@@ -244,6 +250,9 @@ class Scene3Example7(Scene):
         self.camera.background_color = "#120a1f"
         seq = collatz_sequence(7)
 
+        # "Let's start with n equals seven." — plays under the setup below.
+        self.add_sound(SCENE3_INTRO, gain=-3)
+
         header = Text("n = 7", font_size=34, color=CYAN).to_edge(UP)
         self.play(Write(header), run_time=0.7)
 
@@ -266,11 +275,18 @@ class Scene3Example7(Scene):
         first_dot = Dot(axes.c2p(0, seq[0]), radius=0.06, color=GOLD)
         graph_group = VGroup(first_dot)
         self.play(FadeIn(first_dot, scale=0.5), run_time=0.25)
+        self.wait(0.4)  # room for the intro line (2.69s) to finish before the walk starts
 
         for i in range(1, len(seq)):
             prev, curr = seq[i - 1], seq[i]
             is_even = prev % 2 == 0
             op_color = CYAN if is_even else PINK
+
+            if curr == 52:
+                # "Watch it climb before it falls, all the way up to fifty two..."
+                # — the peak of this trajectory; plays as background commentary
+                # over the next several (fast) steps.
+                self.add_sound(SCENE3_PEAK, gain=-3)
 
             op_text = Text("÷ 2" if is_even else "× 3 + 1", font_size=28, color=op_color)
             op_text.next_to(number, RIGHT, buff=0.6)
@@ -295,8 +311,9 @@ class Scene3Example7(Scene):
             self.play(Transform(step_count, new_step), run_time=0.08)
 
         self.wait(0.4)
+        self.add_sound(SCENE3_LAND, gain=-3)  # "Sixteen steps later, it lands on one."
         landed = Text("Reached 1!", font_size=38, color=GREEN).next_to(number, DOWN, buff=0.6)
         self.play(Write(landed), run_time=0.8)
-        self.wait(1.2)
+        self.wait(3.7)
         self.play(*[FadeOut(m) for m in [number, header, step_count, landed, axes, graph_group]],
                   run_time=1.0)
