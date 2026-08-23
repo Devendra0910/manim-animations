@@ -23,9 +23,13 @@ BEEP_ODD = os.path.join(ASSETS_DIR, "beep_odd.wav")     # higher pitch: × 3 + 1
 
 # Cloned-voice narration clips (assets/narration/, gitignored — not committed).
 NARRATION_DIR = os.path.join(ASSETS_DIR, "narration")
-SCENE3_INTRO = os.path.join(NARRATION_DIR, "scene3_intro.wav")  # "Let's start with n equals seven."
-SCENE3_PEAK = os.path.join(NARRATION_DIR, "scene3_peak.wav")    # "Watch it climb... up to fifty two..."
-SCENE3_LAND = os.path.join(NARRATION_DIR, "scene3_land.wav")    # "Sixteen steps later, it lands on one."
+SCENE3_INTRO = os.path.join(NARRATION_DIR, "scene3_intro.wav")  # "Let's start with n equals twenty six."
+SCENE3_PEAK = os.path.join(NARRATION_DIR, "scene3_peak.wav")    # "Watch it jump to forty..."
+SCENE3_LAND = os.path.join(NARRATION_DIR, "scene3_land.wav")    # "Ten steps later, it lands on one."
+
+SCENE4_INTRO = os.path.join(NARRATION_DIR, "scene4_intro.wav")  # "Twenty six took ten steps. Twenty seven takes..."
+SCENE4_PEAK = os.path.join(NARRATION_DIR, "scene4_peak.wav")    # "It climbs past nine thousand..."
+SCENE4_LAND = os.path.join(NARRATION_DIR, "scene4_land.wav")    # "Same simple rule. Wildly different journey."
 
 
 def collatz_sequence(n: int) -> list[int]:
@@ -316,5 +320,97 @@ class Scene3Example26(Scene):
         landed = Text("Reached 1!", font_size=38, color=GREEN).next_to(number, DOWN, buff=0.6)
         self.play(Write(landed), run_time=0.8)
         self.wait(5.1)  # room for the landing line (5.57s) to finish before the fade
+        self.play(*[FadeOut(m) for m in [number, header, step_count, landed, axes, graph_group]],
+                  run_time=1.0)
+
+
+# ============================================================
+# Scene 4 — n = 27: same rule, wildly different journey. Contrasts
+# against Scene 3's tame 10-step n = 26 with a fast, graph-driven
+# reveal instead of a step-by-step walk (111 steps at n = 26's
+# pace would take over a minute).
+# ============================================================
+class Scene4Example27(Scene):
+    def construct(self):
+        self.camera.background_color = "#120a1f"
+        seq26_steps = 10  # from Scene3Example26, for the comparison beat
+        seq = collatz_sequence(27)
+        total_steps = len(seq) - 1
+        peak_val = max(seq)
+
+        # ---------- Comparison recap ---------- (6.76s narration)
+        self.add_sound(SCENE4_INTRO, gain=-3)
+        left = VGroup(
+            Text("n = 26", font_size=32, color=CYAN),
+            Text(f"{seq26_steps} steps", font_size=44, color=GOLD, weight=BOLD),
+        ).arrange(DOWN, buff=0.3).shift(LEFT * 3.2)
+        self.play(FadeIn(left, shift=UP), run_time=0.7)
+        self.wait(1.5)
+
+        right_label = Text("n = 27", font_size=32, color=PINK).shift(RIGHT * 3.2 + UP * 0.55)
+        right_q = Text("?", font_size=44, color=GRAY_B).next_to(right_label, DOWN, buff=0.3)
+        self.play(FadeIn(right_label, shift=UP), FadeIn(right_q, scale=0.5), run_time=0.6)
+        self.wait(1.3)
+
+        right_steps = Text(f"{total_steps} steps", font_size=44, color=ORANGE,
+                            weight=BOLD).move_to(right_q)
+        self.play(Transform(right_q, right_steps),
+                  Flash(right_q, color=ORANGE, flash_radius=0.8), run_time=0.6)
+        self.wait(2.4)
+        self.play(FadeOut(left), FadeOut(right_label), FadeOut(right_q), run_time=0.8)
+
+        # ---------- Setup: header, big number, trajectory graph ----------
+        header = Text("n = 27", font_size=34, color=PINK).to_edge(UP)
+        self.play(Write(header), run_time=0.6)
+
+        number = Text(str(seq[0]), font_size=88, color=WHITE).move_to(UP * 1.1)
+        self.play(FadeIn(number, scale=1.3), run_time=0.4)
+
+        step_count = Text("steps: 0", font_size=24, color=GRAY_B).to_corner(DR)
+        self.play(FadeIn(step_count), run_time=0.3)
+
+        axes = Axes(
+            x_range=[0, total_steps, 20],
+            y_range=[0, peak_val + 500, 2000],
+            x_length=9.5, y_length=3.0,
+            axis_config={"color": GRAY_C, "stroke_width": 1.5, "include_tip": False,
+                         "font_size": 18},
+        ).to_edge(DOWN, buff=0.45)
+        self.play(Create(axes), run_time=0.5)
+
+        first_dot = Dot(axes.c2p(0, seq[0]), radius=0.05, color=GOLD)
+        graph_group = VGroup(first_dot)
+        self.play(FadeIn(first_dot, scale=0.5), run_time=0.2)
+
+        # ---------- The rapid walk: all 111 steps, fast, one (quiet) beep each ----------
+        for i in range(1, len(seq)):
+            prev, curr = seq[i - 1], seq[i]
+            is_even = prev % 2 == 0
+
+            if curr == peak_val:
+                # "It climbs past nine thousand, before it turns back down."
+                self.add_sound(SCENE4_PEAK, gain=-4)
+
+            self.add_sound(BEEP_EVEN if is_even else BEEP_ODD, gain=-14)
+
+            new_dot = Dot(axes.c2p(i, curr), radius=0.05,
+                          color=GREEN if curr == 1 else GOLD)
+            new_line = Line(axes.c2p(i - 1, prev), axes.c2p(i, curr),
+                            color=PURPLE, stroke_width=2)
+            new_step = Text(f"steps: {i}", font_size=24, color=GRAY_B).to_corner(DR)
+            graph_group.add(new_line, new_dot)
+
+            self.play(Create(new_line), FadeIn(new_dot, scale=0.5),
+                      Transform(step_count, new_step), run_time=0.045)
+
+        new_number = Text("1", font_size=88, color=WHITE).move_to(number)
+        self.play(Transform(number, new_number), run_time=0.3)
+        self.wait(2.5)  # let the peak line ("...turns back down") finish before landing
+
+        self.add_sound(SCENE4_LAND, gain=-3)  # "Same simple rule. Wildly different journey."
+        landed = Text(f"Reached 1 — after {total_steps} steps", font_size=32,
+                      color=GREEN).next_to(number, DOWN, buff=0.6)
+        self.play(Write(landed), run_time=0.9)
+        self.wait(5.2)
         self.play(*[FadeOut(m) for m in [number, header, step_count, landed, axes, graph_group]],
                   run_time=1.0)
