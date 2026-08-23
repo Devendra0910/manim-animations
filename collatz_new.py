@@ -172,9 +172,9 @@ class Scene1Branches(Scene):
 # ============================================================
 class Scene2Intro(Scene):
     """Timings below are tuned to a recorded voiceover (9 clips, cloned
-    from voice_sample.wav via XTTS v2, then sped up 1.3x with ffmpeg's
-    atempo since the raw cadence read as slow) rather than picked for
-    pacing — each self.wait() covers the matching narration clip's
+    from voice_sample.wav via XTTS v2, then sped up 1.15x with ffmpeg's
+    atempo since the raw cadence read as slow — 1.3x was tried first
+    and felt too rushed) rather than picked for pacing — each self.wait() covers the matching narration clip's
     actual duration plus a small buffer, so text and voice land
     together. See narration_script.json / durations.json for the clip
     timings this was built against."""
@@ -182,43 +182,43 @@ class Scene2Intro(Scene):
     def construct(self):
         self.camera.background_color = "#120a1f"
 
-        # ---------- Title ---------- (seg 0, 1.95s, starts as title finishes growing)
+        # ---------- Title ---------- (seg 0, 2.20s, starts as title finishes growing)
         title = Text("The Collatz Conjecture", font_size=54, weight=BOLD)
         title.set_color_by_gradient(PINK, CYAN, GOLD)
         self.play(GrowFromCenter(title), run_time=1.0)
-        self.wait(2.45)
+        self.wait(2.70)
         self.play(FadeOut(title), run_time=1.0)
 
-        # ---------- History: 1937 ---------- (seg 1, 4.88s, starts as "1937" appears)
+        # ---------- History: 1937 ---------- (seg 1, 5.51s, starts as "1937" appears)
         year = Text("1937", font_size=120, color=GOLD)
         self.play(FadeIn(year, scale=1.5), run_time=1.0)
         self.wait(1.5)
         sub = Text("Lothar Collatz", font_size=34, color=CYAN).next_to(year, DOWN, buff=0.6)
         self.play(FadeIn(sub, shift=UP), run_time=1.0)
-        self.wait(1.88)
+        self.wait(2.51)
         self.play(FadeOut(year), FadeOut(sub), run_time=1.0)
 
-        # ---------- The rule ---------- (seg 2: 2.27s, seg 3: 2.73s, seg 4: 4.37s)
+        # ---------- The rule ---------- (seg 2: 2.56s, seg 3: 3.09s, seg 4: 4.95s)
         rule_even = Text("if n is even:  n → n / 2", font_size=34, color=CYAN)
         rule_odd = Text("if n is odd:   n → 3n + 1", font_size=34, color=PINK)
         VGroup(rule_even, rule_odd).arrange(DOWN, buff=0.5, aligned_edge=LEFT)
         self.play(FadeIn(rule_even, shift=RIGHT), run_time=0.8)
-        self.wait(1.77)
+        self.wait(2.06)
         self.play(FadeIn(rule_odd, shift=RIGHT), run_time=0.8)
-        self.wait(2.23)
+        self.wait(2.59)
 
         conjecture = Text("Repeat, and you always reach 1.",
                            font_size=30, color=GREEN)
         conjecture.next_to(VGroup(rule_even, rule_odd), DOWN, buff=0.9)
         self.play(FadeIn(conjecture, shift=UP), run_time=0.8)
-        self.wait(4.07)
+        self.wait(4.65)
         self.play(FadeOut(rule_even), FadeOut(rule_odd), FadeOut(conjecture), run_time=1.0)
 
-        # ---------- Many names, one problem ---------- (seg 5, 8.98s across 4 names)
+        # ---------- Many names, one problem ---------- (seg 5, 10.15s across 4 names)
         names = ["The 3n + 1 Problem", "Ulam's Conjecture",
                  "The Syracuse Problem", "Kakutani's Problem"]
         name_colors = [CYAN, PINK, GOLD, PURPLE]
-        per_name_hold = 1.64  # (8.98s / 4 names) - 0.6s transition each
+        per_name_hold = 1.94  # (10.15s / 4 names) - 0.6s transition each
         current = Text(names[0], font_size=38, color=name_colors[0])
         self.play(FadeIn(current), run_time=0.6)
         self.wait(per_name_hold)
@@ -229,20 +229,20 @@ class Scene2Intro(Scene):
         self.wait(0.4)
         self.play(FadeOut(current), run_time=0.8)
 
-        # ---------- Erdős quote ---------- (seg 6: 2.34s, seg 7: 4.45s)
+        # ---------- Erdős quote ---------- (seg 6: 2.64s, seg 7: 5.03s)
         quote = Text('"Mathematics is not yet\nready for such problems."',
                       font_size=36, slant=ITALIC, line_spacing=1.3, color=GOLD)
         attribution = Text("— Paul Erdős", font_size=26, color=PURPLE).next_to(quote, DOWN, buff=0.5)
         self.play(Write(quote), run_time=2.0)
-        self.wait(0.64)
+        self.wait(0.94)
         self.play(FadeIn(attribution), run_time=0.8)
-        self.wait(4.15)
+        self.wait(4.73)
         self.play(FadeOut(quote), FadeOut(attribution), run_time=1.0)
 
-        # ---------- Bridge into the next scene ---------- (seg 8, 1.98s)
+        # ---------- Bridge into the next scene ---------- (seg 8, 2.24s)
         bridge = Text("Let's see why, with an example.", font_size=34, color=CYAN)
         self.play(FadeIn(bridge, scale=0.8), run_time=0.6)
-        self.wait(1.88)
+        self.wait(2.14)
         self.play(FadeOut(bridge), run_time=0.8)
 
 
@@ -281,7 +281,7 @@ class Scene3Example26(Scene):
         first_dot = Dot(axes.c2p(0, seq[0]), radius=0.06, color=GOLD)
         graph_group = VGroup(first_dot)
         self.play(FadeIn(first_dot, scale=0.5), run_time=0.25)
-        self.wait(0.5)  # room for the intro line (2.62s, sped up 1.3x) to finish
+        self.wait(0.86)  # room for the intro line (2.96s, sped up 1.15x) to finish
 
         for i in range(1, len(seq)):
             prev, curr = seq[i - 1], seq[i]
@@ -320,7 +320,7 @@ class Scene3Example26(Scene):
         self.add_sound(SCENE3_LAND, gain=-3)  # "Ten steps later, it lands on one."
         landed = Text("Reached 1!", font_size=38, color=GREEN).next_to(number, DOWN, buff=0.6)
         self.play(Write(landed), run_time=0.8)
-        self.wait(3.8)  # room for the landing line (4.27s, sped up 1.3x) to finish
+        self.wait(4.32)  # room for the landing line (4.82s, sped up 1.15x) to finish
         self.play(*[FadeOut(m) for m in [number, header, step_count, landed, axes, graph_group]],
                   run_time=1.0)
 
@@ -346,18 +346,18 @@ class Scene4Example27(Scene):
             Text(f"{seq26_steps} steps", font_size=44, color=GOLD, weight=BOLD),
         ).arrange(DOWN, buff=0.3).shift(LEFT * 3.2)
         self.play(FadeIn(left, shift=UP), run_time=0.7)
-        self.wait(1.05)
+        self.wait(1.23)
 
         right_label = Text("n = 27", font_size=32, color=PINK).shift(RIGHT * 3.2 + UP * 0.55)
         right_q = Text("?", font_size=44, color=GRAY_B).next_to(right_label, DOWN, buff=0.3)
         self.play(FadeIn(right_label, shift=UP), FadeIn(right_q, scale=0.5), run_time=0.6)
-        self.wait(0.9)
+        self.wait(1.07)
 
         right_steps = Text(f"{total_steps} steps", font_size=44, color=ORANGE,
                             weight=BOLD).move_to(right_q)
         self.play(Transform(right_q, right_steps),
                   Flash(right_q, color=ORANGE, flash_radius=0.8), run_time=0.6)
-        self.wait(1.65)
+        self.wait(1.97)
         self.play(FadeOut(left), FadeOut(right_label), FadeOut(right_q), run_time=0.8)
 
         # ---------- Setup: header, big number, trajectory graph ----------
@@ -406,12 +406,12 @@ class Scene4Example27(Scene):
 
         new_number = Text("1", font_size=88, color=WHITE).move_to(number)
         self.play(Transform(number, new_number), run_time=0.3)
-        self.wait(1.5)  # let the peak line ("...turns back down") finish before landing
+        self.wait(1.9)  # let the peak line ("...turns back down") finish before landing
 
         self.add_sound(SCENE4_LAND, gain=-3)  # "Same simple rule. Wildly different journey."
         landed = Text(f"Reached 1 — after {total_steps} steps", font_size=32,
                       color=GREEN).next_to(number, DOWN, buff=0.6)
         self.play(Write(landed), run_time=0.9)
-        self.wait(3.9)
+        self.wait(4.42)
         self.play(*[FadeOut(m) for m in [number, header, step_count, landed, axes, graph_group]],
                   run_time=1.0)
