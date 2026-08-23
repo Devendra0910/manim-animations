@@ -224,7 +224,7 @@ class Scene2Intro(Scene):
         self.play(FadeOut(quote), FadeOut(attribution), run_time=1.0)
 
         # ---------- Bridge into the next scene ---------- (seg 8, 1.48s)
-        bridge = Text("Let's see why.", font_size=34, color=CYAN)
+        bridge = Text("Let's see why, with an example.", font_size=34, color=CYAN)
         self.play(FadeIn(bridge, scale=0.8), run_time=0.6)
-        self.wait(1.38)
+        self.wait(2.49)
         self.play(FadeOut(bridge), run_time=0.8)
