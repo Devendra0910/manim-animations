@@ -242,18 +242,19 @@ class Scene2Intro(Scene):
 
 
 # ============================================================
-# Scene 3 — worked example: n = 7, every step shown, a beep on
+# Scene 3 — worked example: n = 26, every step shown, a beep on
 # every conversion, and a trajectory graph that fills in live.
 # ============================================================
-class Scene3Example7(Scene):
+class Scene3Example26(Scene):
     def construct(self):
         self.camera.background_color = "#120a1f"
-        seq = collatz_sequence(7)
+        seq = collatz_sequence(26)
+        peak_val = max(seq)
 
-        # "Let's start with n equals seven." — plays under the setup below.
+        # "Let's start with n equals twenty-six." — plays under the setup below.
         self.add_sound(SCENE3_INTRO, gain=-3)
 
-        header = Text("n = 7", font_size=34, color=CYAN).to_edge(UP)
+        header = Text("n = 26", font_size=34, color=CYAN).to_edge(UP)
         self.play(Write(header), run_time=0.7)
 
         number = Text(str(seq[0]), font_size=88, color=WHITE).move_to(UP * 1.1)
@@ -275,17 +276,17 @@ class Scene3Example7(Scene):
         first_dot = Dot(axes.c2p(0, seq[0]), radius=0.06, color=GOLD)
         graph_group = VGroup(first_dot)
         self.play(FadeIn(first_dot, scale=0.5), run_time=0.25)
-        self.wait(0.4)  # room for the intro line (2.69s) to finish before the walk starts
+        self.wait(0.7)  # room for the intro line (3.42s) to finish before the walk starts
 
         for i in range(1, len(seq)):
             prev, curr = seq[i - 1], seq[i]
             is_even = prev % 2 == 0
             op_color = CYAN if is_even else PINK
 
-            if curr == 52:
-                # "Watch it climb before it falls, all the way up to fifty two..."
-                # — the peak of this trajectory; plays as background commentary
-                # over the next several (fast) steps.
+            if curr == peak_val:
+                # "Watch it jump to forty before it turns around." — the peak
+                # of this trajectory; plays as background commentary over the
+                # next several (fast) steps.
                 self.add_sound(SCENE3_PEAK, gain=-3)
 
             op_text = Text("÷ 2" if is_even else "× 3 + 1", font_size=28, color=op_color)
@@ -311,9 +312,9 @@ class Scene3Example7(Scene):
             self.play(Transform(step_count, new_step), run_time=0.08)
 
         self.wait(0.4)
-        self.add_sound(SCENE3_LAND, gain=-3)  # "Sixteen steps later, it lands on one."
+        self.add_sound(SCENE3_LAND, gain=-3)  # "Ten steps later, it lands on one."
         landed = Text("Reached 1!", font_size=38, color=GREEN).next_to(number, DOWN, buff=0.6)
         self.play(Write(landed), run_time=0.8)
-        self.wait(3.7)
+        self.wait(5.1)  # room for the landing line (5.57s) to finish before the fade
         self.play(*[FadeOut(m) for m in [number, header, step_count, landed, axes, graph_group]],
                   run_time=1.0)
