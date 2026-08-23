@@ -5,6 +5,7 @@ Run a single scene at low quality for fast preview:
     manim -pql collatz_new.py Scene1Branches
 """
 import math
+import os
 from manim import *
 
 PINK = "#ff2e88"
@@ -15,6 +16,10 @@ ORANGE = "#ff6b35"
 PURPLE = "#9d4edd"
 TEAL_C = "#20c997"
 ROSE = "#e63980"
+
+ASSETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "assets")
+BEEP_EVEN = os.path.join(ASSETS_DIR, "beep_even.wav")   # lower pitch: ÷ 2
+BEEP_ODD = os.path.join(ASSETS_DIR, "beep_odd.wav")     # higher pitch: × 3 + 1
 
 
 def collatz_sequence(n: int) -> list[int]:
@@ -228,3 +233,70 @@ class Scene2Intro(Scene):
         self.play(FadeIn(bridge, scale=0.8), run_time=0.6)
         self.wait(2.49)
         self.play(FadeOut(bridge), run_time=0.8)
+
+
+# ============================================================
+# Scene 3 — worked example: n = 7, every step shown, a beep on
+# every conversion, and a trajectory graph that fills in live.
+# ============================================================
+class Scene3Example7(Scene):
+    def construct(self):
+        self.camera.background_color = "#120a1f"
+        seq = collatz_sequence(7)
+
+        header = Text("n = 7", font_size=34, color=CYAN).to_edge(UP)
+        self.play(Write(header), run_time=0.7)
+
+        number = Text(str(seq[0]), font_size=88, color=WHITE).move_to(UP * 1.1)
+        self.play(FadeIn(number, scale=1.3), run_time=0.5)
+
+        step_count = Text("steps: 0", font_size=24, color=GRAY_B).to_corner(DR)
+        self.play(FadeIn(step_count), run_time=0.35)
+
+        # Trajectory graph, built up one point at a time as the walk proceeds.
+        axes = Axes(
+            x_range=[0, len(seq) - 1, 4],
+            y_range=[0, max(seq) + 5, 10],
+            x_length=9.5, y_length=2.6,
+            axis_config={"color": GRAY_C, "stroke_width": 1.5, "include_tip": False,
+                         "font_size": 18},
+        ).to_edge(DOWN, buff=0.55)
+        self.play(Create(axes), run_time=0.6)
+
+        first_dot = Dot(axes.c2p(0, seq[0]), radius=0.06, color=GOLD)
+        graph_group = VGroup(first_dot)
+        self.play(FadeIn(first_dot, scale=0.5), run_time=0.25)
+
+        for i in range(1, len(seq)):
+            prev, curr = seq[i - 1], seq[i]
+            is_even = prev % 2 == 0
+            op_color = CYAN if is_even else PINK
+
+            op_text = Text("÷ 2" if is_even else "× 3 + 1", font_size=28, color=op_color)
+            op_text.next_to(number, RIGHT, buff=0.6)
+            new_number = Text(str(curr), font_size=88, color=WHITE).move_to(number)
+
+            # A beep lands right as the number flips — pitch tells even from odd.
+            self.add_sound(BEEP_EVEN if is_even else BEEP_ODD, gain=-6)
+            self.play(FadeIn(op_text, shift=LEFT), run_time=0.18)
+            self.play(Transform(number, new_number), Flash(number, color=op_color,
+                                                             flash_radius=0.9, line_length=0.2),
+                      run_time=0.26)
+            self.play(FadeOut(op_text), run_time=0.12)
+
+            new_dot = Dot(axes.c2p(i, curr), radius=0.06,
+                          color=GREEN if curr == 1 else GOLD)
+            new_line = Line(axes.c2p(i - 1, prev), axes.c2p(i, curr),
+                            color=PURPLE, stroke_width=2.5)
+            graph_group.add(new_line, new_dot)
+            self.play(Create(new_line), FadeIn(new_dot, scale=0.5), run_time=0.14)
+
+            new_step = Text(f"steps: {i}", font_size=24, color=GRAY_B).to_corner(DR)
+            self.play(Transform(step_count, new_step), run_time=0.08)
+
+        self.wait(0.4)
+        landed = Text("Reached 1!", font_size=38, color=GREEN).next_to(number, DOWN, buff=0.6)
+        self.play(Write(landed), run_time=0.8)
+        self.wait(1.2)
+        self.play(*[FadeOut(m) for m in [number, header, step_count, landed, axes, graph_group]],
+                  run_time=1.0)
